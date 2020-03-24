@@ -15,3 +15,9 @@ http://www.redcross.ca/
 http://karuna-shechen.org/how-to-help/
 
 http://www.globalgiving.org/
+
+
+
+## Documentation
+
++ [Building](doc/build.md)
