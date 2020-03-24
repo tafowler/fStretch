@@ -20,4 +20,4 @@ http://www.globalgiving.org/
 
 ## Documentation
 
-+ [Building](doc/build.md)
++ [Building](docs/build.md)
