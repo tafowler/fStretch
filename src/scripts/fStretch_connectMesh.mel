@@ -1,0 +1,21 @@
+global proc fStretch_connectMesh(string $mesh)
+{
+    int $failed=1; int $meshes=0; string $fStretch;
+    string $sel[] = `ls -sl`;
+    if (size($sel) > 1){
+        string $history[] = `listHistory -pruneDagObjects true -interestLevel 0 $sel[1]`;
+        for ($each in $history) { if (`nodeType $each` == "fStretch") { $fStretch = $each; $failed=0; } } 
+        for ($each in `listRelatives -f $sel[0]`) { if (`nodeType $each` == "mesh") { $meshes=1; } } 
+        for ($each in `listRelatives -f $sel[1]`) { if (`nodeType $each` == "mesh") { $meshes*=2; } } 
+        if (!$failed && ($meshes >= 2) ) {
+            print ("fStretch: " + $mesh + " connected."); connectAttr -f ($sel[0] + ".outMesh") ($fStretch + "." + $mesh);
+            if (`getAttr ($fStretch + ".displayWarnings")` == 1) 
+            { 
+                if ( ($mesh == "UstretchMesh") || ($mesh == "VstretchMesh") || ($mesh == "UsquashMesh") || ($mesh == "VsquashMesh") || ($mesh == "UbendInMesh") || ($mesh == "VbendInMesh") || ($mesh == "UbendOutMesh") || ($mesh == "VbendOutMesh") ) 
+                {
+                    fStretch_window("connectUVDirectionMesh"); 
+                } 
+            }
+        }
+    }
+}

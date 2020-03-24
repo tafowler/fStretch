@@ -34,7 +34,7 @@ MPoint closestPointOnPlane(MVector faceNormal, MVector facePoint, MVector point)
 float distance3D(MVector a, MVector b);
 MVector intersectTwoLines(MVector A1, MVector A2, MVector B1, MVector B2);
 MVector getNormal(MPoint A, MPoint B, MPoint C);
-int round(float value);
+//int round(float value);
 
 
 // ################################################################################################

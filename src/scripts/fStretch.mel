@@ -1,0 +1,199 @@
+global proc fStretch()
+{
+
+/* Verify if the plug-in is loaded*/
+
+    if (!`pluginInfo -q -l "fStretch"`) { loadPlugin "fStretch"; }
+    if (!`pluginInfo -q -l "fStretch"`) { error("fStretch: plug-in is not loaded."); }
+
+/* Verify if the selection is a mesh*/
+    string $sel[] = `ls -sl`;
+    if ((`nodeType $sel[0]` != "transform") && (`nodeType $sel[0]` != "mesh")) { error "fStretch: Please select a mesh to apply fStretch."; }
+    for ($each in $sel){
+        string $shapes[] = `listRelatives -f $each`;
+        if (`nodeType $shapes[0]` != "mesh") { error "fStretch: the selected object(s) are not polygonal."; }
+    }
+
+/* Create fStretch on selected meshes */
+
+    for ($each in $sel){
+
+/* Create it ! */
+        select -r $each;
+        string $restMesh[] = `duplicate -rr -name ($each + "Rest")`;
+        string $command = ("setAttr " + $restMesh[0] + ".visibility 0");
+        catchQuiet(eval($command));
+        select -r $each;
+        string $node[] = `deformer -type fStretch`; 
+        string $nodeName = $node[0];;
+/*			setAttr -channelBox ";
+command = command + lockNumberOfProcessorsToUseInverse;
+command = command + " -keyable ";
+command = command + lockNumberOfProcessorsToUseInverse;
+command = command + " -l ";
+command = command + lockNumberOfProcessorsToUse;
+command = command + " ($node[0] + ".NumberOfProcessorsToUse");
+        editorTemplate -dc $node[0] NumberOfProcessorsToUse ";
+command = command + lockNumberOfProcessorsToUse;*/
+
+        select -r $restMesh[0] $each;
+        fStretch_connectMesh("restMesh");
+        select -r $each;
+
+/* Initialize the paintable attributes */
+
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "weights";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionSmooth";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleSmooth";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionDirection";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleDirection";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintStretchGrowShrink";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintSquashGrowShrink";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendInGrowShrink";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendOutGrowShrink";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionRange";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleRange";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintStretchRelax";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintSquashRelax";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendInRelax";
+        makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendOutRelax";
+
+        delete $restMesh[0];
+
+        int $vertexNumber[] = `polyEvaluate -v $each`;
+        string $oneList = ""; string $halfList = ""; int $n=0;
+
+        int $amount = 0;
+
+        progressWindow
+            -title "Creating fStretch..."
+            -progress $amount
+            -status "      Working hard: 0%      "
+            -isInterruptable true;
+
+        int $break = 0;
+        for ($n=0;$n<$vertexNumber[0];$n++) {
+            $oneList = ($oneList + " 1");
+            $halfList = ($halfList + " 0.5");
+
+            if ( `progressWindow -query -isCancelled` ) {
+                $break = 1; break;
+            }
+            float $varA = $n; float $varB = $vertexNumber[0];
+            $amount = (($varA/($varB)) * 100);
+            progressWindow -edit
+                -progress $amount
+                -status ("      Working hard... "+$amount+"%      ");
+        }
+        progressWindow -endProgress;
+        if ($break) {
+            delete $restMesh;
+            delete $node;
+            error("fStretch: cancelled.");
+        }
+
+/* Init tension smooth */
+         $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptsm[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+/* Init angle smooth */
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".pasm[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+/* Init tension direction */
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptd[0:" + ($vertexNumber[0]-1) + "]\"" + $halfList); eval($command);
+/* Init angle direction */
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".pad[0:" + ($vertexNumber[0]-1) + "]\"" + $halfList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".pstgs[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".psqgs[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".pbigs[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".pbogs[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptrang[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".parang[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptstrtrel[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptsqrel[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptbdinrel[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+        $command = ("setAttr -s " + $vertexNumber[0] + " \"" + $node[0] + ".ptbdotrel[0:" + ($vertexNumber[0]-1) + "]\"" + $oneList); eval($command);
+
+/*makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionSmooth";
+/*string $initialCtx = "selectSuperContext";*/
+
+/*ArtPaintAttrToolOptions;*/
+/*float $default = 1;*/
+/*string $ctx = `currentCtx`;*/
+/*float $opacity = `artAttrCtx -q -opacity $ctx`;*/
+/*float $value = `artAttrCtx -q -value $ctx`;*/
+/*artAttrCtx -e -opacity 1.0 $ctx;*/
+/*artAttrCtx -e -value $default $ctx;*/
+/*artAttrCtx -e -clear $ctx;*/
+/*artAttrCtx -e -opacity $opacity $ctx;*/
+/*artAttrCtx -e -value $value $ctx;*/
+/*setToolTo $initialCtx;*/
+
+/* add entries to the falloff attributes*/
+
+        setAttr ($nodeName+".stretchFalloff[0].stretchFalloff_Interp") 1;
+        setAttr ($nodeName+".stretchFalloff[0].stretchFalloff_Position") 1;
+        setAttr ($nodeName+".stretchFalloff[0].stretchFalloff_FloatValue") 1;
+        setAttr ($nodeName+".stretchFalloff[1].stretchFalloff_Interp") 1;
+        setAttr ($nodeName+".stretchFalloff[1].stretchFalloff_Position") 0;
+        setAttr ($nodeName+".stretchFalloff[1].stretchFalloff_FloatValue") 0;
+
+        setAttr ($nodeName+".squashFalloff[0].squashFalloff_Interp") 1;
+        setAttr ($nodeName+".squashFalloff[0].squashFalloff_Position") 1;
+        setAttr ($nodeName+".squashFalloff[0].squashFalloff_FloatValue") 1;
+        setAttr ($nodeName+".squashFalloff[1].squashFalloff_Interp") 1;
+        setAttr ($nodeName+".squashFalloff[1].squashFalloff_Position") 0;
+        setAttr ($nodeName+".squashFalloff[1].squashFalloff_FloatValue") 0;
+
+        setAttr ($nodeName+".bendInFalloff[0].bendInFalloff_Interp") 1;
+        setAttr ($nodeName+".bendInFalloff[0].bendInFalloff_Position") 1;
+        setAttr ($nodeName+".bendInFalloff[0].bendInFalloff_FloatValue") 1;
+        setAttr ($nodeName+".bendInFalloff[1].bendInFalloff_Interp") 1;
+        setAttr ($nodeName+".bendInFalloff[1].bendInFalloff_Position") 0;
+        setAttr ($nodeName+".bendInFalloff[1].bendInFalloff_FloatValue") 0;
+
+        setAttr ($nodeName+".bendOutFalloff[0].bendOutFalloff_Interp") 1;
+        setAttr ($nodeName+".bendOutFalloff[0].bendOutFalloff_Position") 1;
+        setAttr ($nodeName+".bendOutFalloff[0].bendOutFalloff_FloatValue") 1;
+        setAttr ($nodeName+".bendOutFalloff[1].bendOutFalloff_Interp") 1;
+        setAttr ($nodeName+".bendOutFalloff[1].bendOutFalloff_Position") 0;
+        setAttr ($nodeName+".bendOutFalloff[1].bendOutFalloff_FloatValue") 0;
+
+        setAttr ($nodeName+".tensionColorRamp[0].tensionColorRamp_Color") -type double3 1 0 0;
+        setAttr ($nodeName+".tensionColorRamp[0].tensionColorRamp_Position") 0;
+        setAttr ($nodeName+".tensionColorRamp[0].tensionColorRamp_Interp") 1;
+
+        setAttr ($nodeName+".tensionColorRamp[1].tensionColorRamp_Color") -type double3 1 1 0;
+        setAttr ($nodeName+".tensionColorRamp[1].tensionColorRamp_Position") 1;
+        setAttr ($nodeName+".tensionColorRamp[1].tensionColorRamp_Interp") 1;
+
+        setAttr ($nodeName+".angleColorRamp[0].angleColorRamp_Color") -type double3 0 0 1;
+        setAttr ($nodeName+".angleColorRamp[0].angleColorRamp_Position") 0;
+        setAttr ($nodeName+".angleColorRamp[0].angleColorRamp_Interp") 1;
+
+        setAttr ($nodeName+".angleColorRamp[1].angleColorRamp_Color") -type double3 .5 1 0;
+        setAttr ($nodeName+".angleColorRamp[1].angleColorRamp_Position") 1;
+        setAttr ($nodeName+".angleColorRamp[1].angleColorRamp_Interp") 1;
+
+        setAttr ($nodeName+".counterSharpAreas[0].counterSharpAreas_Interp") 1;
+        setAttr ($nodeName+".counterSharpAreas[0].counterSharpAreas_Position") 1;
+        setAttr ($nodeName+".counterSharpAreas[0].counterSharpAreas_FloatValue") 0;
+        setAttr ($nodeName+".counterSharpAreas[1].counterSharpAreas_Interp") 1;
+        setAttr ($nodeName+".counterSharpAreas[1].counterSharpAreas_Position") 0;
+        setAttr ($nodeName+".counterSharpAreas[1].counterSharpAreas_FloatValue") 0;
+
+        setAttr ($nodeName+".tensionFalloff[0].tensionFalloff_Interp") 2;
+        setAttr ($nodeName+".tensionFalloff[0].tensionFalloff_Position") 1;
+        setAttr ($nodeName+".tensionFalloff[0].tensionFalloff_FloatValue") 1;
+        setAttr ($nodeName+".tensionFalloff[1].tensionFalloff_Interp") 2;
+        setAttr ($nodeName+".tensionFalloff[1].tensionFalloff_Position") 0;
+        setAttr ($nodeName+".tensionFalloff[1].tensionFalloff_FloatValue") 0;
+
+        setAttr ($nodeName+".angleFalloff[0].angleFalloff_Interp") 2;
+        setAttr ($nodeName+".angleFalloff[0].angleFalloff_Position") 1;
+        setAttr ($nodeName+".angleFalloff[0].angleFalloff_FloatValue") 1;
+        setAttr ($nodeName+".angleFalloff[1].angleFalloff_Interp") 2;
+        setAttr ($nodeName+".angleFalloff[1].angleFalloff_Position") 0;
+        setAttr ($nodeName+".angleFalloff[1].angleFalloff_FloatValue") 0;
+    }
+
+    fStretch_window("creation");
+}

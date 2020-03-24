@@ -1,0 +1,5 @@
+global proc fStretch_browse_dir( string $directory , string $type)
+{
+    global string $fStretch_browse_dir;
+    $fStretch_browse_dir=$directory + "/";
+}

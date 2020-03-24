@@ -1,0 +1,115 @@
+global proc AEfStretchTemplate ( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+
+    editorTemplate -beginLayout "Deformations" -collapse 0;
+        editorTemplate -addControl envelope;
+        editorTemplate -beginLayout "Tension Based" -collapse 0;
+            editorTemplate -l "Envelope" -addControl tensionEnvelope;
+            editorTemplate -l "Pre Smooth" -addControl tensionPreSmooth;
+            editorTemplate -l "Post Smooth" -addControl tensionPostSmooth;
+            editorTemplate -l "U Direction" -addControl tensionUDirection;
+            editorTemplate -l "V Direction" -addControl tensionVDirection;
+            editorTemplate -as;
+            editorTemplate -l "Stretch" -addControl stretch;
+            editorTemplate -l "Range" -addControl stretchRange;
+            editorTemplate -l "Grow / Shrink" -addControl stretchGrowShrink;
+            editorTemplate -l "Relax" -addControl stretchRelax;
+            editorTemplate -as;
+            editorTemplate -l "Squash" -addControl squash;
+            editorTemplate -l "Range" -addControl squashRange;
+            editorTemplate -l "Grow / Shrink" -addControl squashGrowShrink;
+            editorTemplate -l "Relax" -addControl squashRelax;
+            AEaddRampControl ($nodeName+".tensionFalloff");
+            AEaddRampControl ($nodeName+".stretchFalloff");
+            AEaddRampControl ($nodeName+".squashFalloff");
+        editorTemplate -endLayout;
+
+        editorTemplate -beginLayout "Angle Based" -collapse 1;
+            editorTemplate -l "Envelope" -addControl angleEnvelope;
+            editorTemplate -l "Pre Smooth" -addControl anglePreSmooth;
+            editorTemplate -l "Post Smooth" -addControl anglePostSmooth;
+            editorTemplate -l "U Direction" -addControl angleUDirection;
+            editorTemplate -l "V Direction" -addControl angleVDirection;
+            editorTemplate -as;
+            editorTemplate -addControl bendIn;
+            editorTemplate -l "Range" -addControl bendInRange;
+            editorTemplate -l "Grow / Shrink" -addControl bendInGrowShrink;
+            editorTemplate -l "Relax" -addControl bendInRelax;
+            editorTemplate -as;
+            editorTemplate -addControl bendOut;
+            editorTemplate -l "Range" -addControl bendOutRange;
+            editorTemplate -l "Grow / Shrink" -addControl bendOutGrowShrink;
+            editorTemplate -l "Relax" -addControl bendOutRelax;
+            AEaddRampControl ($nodeName+".angleFalloff");
+            AEaddRampControl ($nodeName+".bendInFalloff");
+            AEaddRampControl ($nodeName+".bendOutFalloff");
+            editorTemplate -beginLayout "Advanced" -collapse 1;
+                AEaddRampControl ($nodeName+".counterSharpAreas");
+            editorTemplate -endLayout;
+        editorTemplate -endLayout;
+
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Wrap" -collapse 1;
+        editorTemplate -addControl wrap;
+        editorTemplate -addControl smoothRadius;
+        editorTemplate -beginLayout "Optimization" -collapse 1;
+            editorTemplate -addControl oneTriPerFace;
+/*editorTemplate -addControl ratioPerRadius;*/
+/*editorTemplate -addControl centralFactor;*/
+        editorTemplate -endLayout;
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Color Per Vertex" -collapse 1;
+        editorTemplate -addControl drawColorPerVertex;
+        editorTemplate -addControl colorDisplay;
+        editorTemplate -as;
+        editorTemplate -addControl tensionColorContrast;
+        editorTemplate -addControl angleColorContrast;
+        editorTemplate -as;
+        editorTemplate -addControl forceColorRefresh;
+        AEaddRampControl ($nodeName+".tensionColorRamp");
+        editorTemplate -cl 0 ($nodeName+".tensionColorRamp");
+        AEaddRampControl ($nodeName+".angleColorRamp");
+        editorTemplate -cl 0 ($nodeName+".angleColorRamp");
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Acceleration" -collapse 0;
+/*editorTemplate -addControl accelerationType;*/
+/*editorTemplate -beginLayout "Multithreading" -collapse 0;*/
+        editorTemplate -addControl UseAllAvailableProcessors;
+        editorTemplate -addControl NumberOfProcessorsToUse;
+/*editorTemplate -endLayout;*/
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Node Behavior" -collapse 1;
+        editorTemplate -addControl caching;
+        editorTemplate -addControl nodeState;
+        editorTemplate -addControl displayWarnings;
+        /*editorTemplate -addControl displayComputeTime;*/
+    editorTemplate -endLayout;
+
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+/* Hide useless stuff*/
+
+    editorTemplate -s input;
+    editorTemplate -s weightList;
+    editorTemplate -s displayComputeTime;
+    editorTemplate -s map64BitIndices;
+    
+    editorTemplate -s restMesh;
+    editorTemplate -s squashMesh;
+    editorTemplate -s stretchMesh;
+    editorTemplate -s bendInMesh;
+    editorTemplate -s bendOutMesh;
+    editorTemplate -s UsquashMesh;
+    editorTemplate -s VsquashMesh;
+    editorTemplate -s UstretchMesh;
+    editorTemplate -s VstretchMesh;
+    editorTemplate -s UbendInMesh;
+    editorTemplate -s VbendInMesh;
+    editorTemplate -s UbendOutMesh;
+    editorTemplate -s VbendOutMesh;
+}

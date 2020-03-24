@@ -1,0 +1,72 @@
+global proc fStretch_ui()
+{
+    global string $fStretch_ui;
+    if (`menu -exists $fStretch_ui`)
+        deleteUI $fStretch_ui;
+
+    string $name = "fStretch";
+    global string $gMainWindow;
+    $fStretch_ui = `menu -p $gMainWindow -to true -allowOptionBoxes true -l $name`;
+
+    menuItem -label "Create fStretch" -ann "Apply the fStretch deformer on the selected mesh." -c ("fStretch;");
+    menuItem -divider true;
+    menuItem -subMenu true -to true -allowOptionBoxes true -label "Connect Mesh";
+        menuItem -label "Stretch" -ann "Connect a mesh that will be used when our mesh stretch." -c ("fStretch_connectMesh("stretchMesh");");
+        menuItem -label "Squash" -ann "Connect a mesh that will be used when our mesh squash." -c ("fStretch_connectMesh("squashMesh");");
+        menuItem -label "Bend In" -ann "Connect a mesh that will be used when our mesh bend in." -c ("fStretch_connectMesh("bendInMesh");");
+        menuItem -label "Bend Out" -ann "Connect a mesh that will be used when our mesh bend out." -c ("fStretch_connectMesh("bendOutMesh");");
+        menuItem -divider true;
+        menuItem -label "Rest" -ann "Connect a mesh that represents the bindpose of our mesh." -c ("fStretch_connectMesh("restMesh");");
+        menuItem -divider true;
+        menuItem -subMenu true -to true -allowOptionBoxes true -label "Direction";
+            menuItem -label "U Stretch" -ann "Connect a mesh that will be used when our mesh stretch vertically based on it's UV." -c ("fStretch_connectMesh("UstretchMesh");");
+            menuItem -label "V Stretch" -ann "Connect a mesh that will be used when our mesh stretch horizontally based on it's UV." -c ("fStretch_connectMesh("VstretchMesh");");
+            menuItem -divider true;
+            menuItem -label "U Squash" -ann "Connect a mesh that will be used when our mesh squash vertically based on it's UV." -c ("fStretch_connectMesh("UsquashMesh");");
+            menuItem -label "V Squash" -ann "Connect a mesh that will be used when our mesh squash horizontally based on it's UV." -c ("fStretch_connectMesh("VsquashMesh");");
+            menuItem -divider true;
+            menuItem -label "U Bend In" -ann "Connect a mesh that will be used when our mesh bend in vertically based on it's UV." -c ("fStretch_connectMesh("UbendInMesh");");
+            menuItem -label "V Bend In" -ann "Connect a mesh that will be used when our mesh bend in horizontally based on it's UV." -c ("fStretch_connectMesh("VbendInMesh");");
+            menuItem -divider true;
+            menuItem -label "U Bend Out" -ann "Connect a mesh that will be used when our mesh bend out vertically based on it's UV." -c ("fStretch_connectMesh("UbendOutMesh");");
+            menuItem -label "V Bend Out" -ann "Connect a mesh that will be used when our mesh bend out horizontally based on it's UV." -c ("fStretch_connectMesh("VbendOutMesh");");
+        setParent -menu ..;
+
+        setParent -menu ..;
+            menuItem -subMenu true -to true -allowOptionBoxes true -label "Paint";
+            menuItem -label "Envelope" -ann "Paint the Envelope attribute on the selected fStretch node." -c ("fStretch_paint("weights");");
+            menuItem -divider true;
+            menuItem -label "Tension Range" -ann "Paint the Tension Range attribute on the selected fStretch node." -c ("fStretch_paint("paintTensionRange");");
+            menuItem -label "Angle Range" -ann "Paint the Angle Range attribute on the selected fStretch node." -c ("fStretch_paint("paintAngleRange");");
+            menuItem -divider true;
+            menuItem -label "Tension Smooth" -ann "Paint the Tension Smooth attribute on the selected fStretch node." -c ("fStretch_paint("paintTensionSmooth");");
+            menuItem -label "Angle Smooth" -ann "Paint the Angle Smooth attribute on the selected fStretch node." -c ("fStretch_paint("paintAngleSmooth");");
+            menuItem -divider true;
+            menuItem -label "Tension UV Direction" -ann "Paint the Tension UV attribute on the selected fStretch node." -c ("fStretch_paint("paintTensionDirection");");
+            menuItem -label "Angle UV Direction" -ann "Paint the Angle UV attribute on the selected fStretch node." -c ("fStretch_paint("paintAngleDirection");");
+            menuItem -divider true;
+            menuItem -label "Stretch Grow / Shrink" -ann "Paint the Stretch Grow / Shrink attribute on the selected fStretch node." -c ("fStretch_paint("paintStretchGrowShrink");");
+            menuItem -label "Squash Grow / Shrink" -ann "Paint the Squash Grow / Shrink attribute on the selected fStretch node." -c ("fStretch_paint("paintSquashGrowShrink");");
+            menuItem -label "Bend In Grow / Shrink" -ann "Paint the Stretch Bend In / Shrink attribute on the selected fStretch node." -c ("fStretch_paint("paintBendInGrowShrink");");
+            menuItem -label "Bend Out Grow / Shrink" -ann "Paint the Stretch Bend Out / Shrink attribute on the selected fStretch node." -c ("fStretch_paint("paintBendOutGrowShrink");");
+            menuItem -divider true;
+            menuItem -label "Stretch Relax" -ann "Paint the Stretch Relax attribute on the selected fStretch node." -c ("fStretch_paint("paintStretchRelax");");
+            menuItem -label "Squash Relax" -ann "Paint the Squash Relax attribute on the selected fStretch node." -c ("fStretch_paint("paintSquashRelax");");
+            menuItem -label "BendIn Relax" -ann "Paint the BendIn Relax attribute on the selected fStretch node." -c ("fStretch_paint("paintBendInRelax");");
+            menuItem -label "BendOut Relax" -ann "Paint the BendOut Relax attribute on the selected fStretch node." -c ("fStretch_paint("paintBendOutRelax");");
+/*menuItem -divider true;*/
+/*menuItem -label "Stretch Relax" -ann "Paint the stretchRelax attribute on the selected fStretch node." -c (";");*/
+/*menuItem -label "Squash Relax" -ann "Paint the stretchRelax attribute on the selected fStretch node." -c (";");*/
+/*menuItem -label "Bend Relax" -ann "Paint the bendRelax attribute on the selected fStretch node." -c (";");*/
+/*menuItem -label "Straighten Relax" -ann "Paint the straightenRelax attribute on the selected fStretch node." -c (";");*/
+/*menuItem -divider true;*/
+/*menuItem -label "Wrap Smooth Radius" -ann "Paint the wrapSmooth attribute on the selected fStretch node." -c (";");*/
+        setParent -menu ..;
+    setParent -menu ..;
+    menuItem -subMenu true -to true -allowOptionBoxes true -label "Tools";
+        menuItem -label "Create Displacement Network..." -ann "Create a network that controls the displacement of the mesh based on fStretch's calculations." -c ("fStretch_displacement ui;");
+        menuItem -label "Bake Color Per Vertex..." -ann "Bake the Color Per Vertex of the selected mesh into maps. The mesh needs to have an fStretch deformer on it." -c ("fStretch_colorPerVertexWindow;");
+    setParent -menu ..;
+    menuItem -divider true;
+    menuItem -label "Help" -ann "Launch fStretch's online help." -c ("showHelp -a "http://cgaddict.com/documentation.html"");
+}

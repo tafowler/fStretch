@@ -1,0 +1,139 @@
+global proc fStretch_window(string $name)
+{
+/* Check out the version of maya so we use the correct windows size. */
+    string $about = `about -v`; string $mayaVersion[];
+    tokenizeList($about, $mayaVersion);
+    int $mayaYear = $mayaVersion[0];
+
+    if ($name == "UVDirection"){
+
+        if (fStretch_prefs("r",0,0) == 0) {
+            int $height; if ($mayaYear < 2011) { $height = 185; } else { $height = 160; }
+            if (($mayaYear < 2011) && (`about -li`)) 
+            { 
+                $height = 160; 
+            }
+            string $window = `window -title "fStretch - UV Direction feature " -iconName "fStretch - UV Direction feature" -rtf 1 -tlb 1 -s 1`;
+            columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+            text -h 20 "\n";
+            text "Warning ! fStretch makes use of the mesh's UVs in order tondetermine the direction. Please make sure that yournmesh's UVs are final before using the UV Direction feature. n";
+            checkBox -label "Do not show this warning again." -v 0 -onc ("fStretch_prefs(\"w\",0,1)") -ofc ("fStretch_prefs(\"w\",0,0)");
+            text -h 10 "\n";
+            button -label "Close" -w 100 -rs 1 -h 30 -command ("deleteUI -window " + $window);
+            text -h 20 "\n";
+            setParent ..;
+            showWindow $window;
+            window -e -wh 400 $height -s 0 $window;
+        }
+
+    }
+    if ($name == "creation"){
+
+        if (fStretch_prefs("r",3,0) == 0) {
+            int $height; if ($mayaYear < 2011) { $height = 185; } else { $height = 160; }
+            if (($mayaYear < 2011) && (`about -li`)) { $height = 160; }
+
+            string $window = `window -title "fStretch - Creation " -iconName "fStretch - Creation" -rtf 1 -tlb 1 -s 1`;
+            columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+            text -h 20 "\n";
+            text "fStretch has been created. nPlease note that this has to be donen while the geometry is at its neutral pose. n";
+            checkBox -label "Do not show this warning again." -v 0 -onc ("fStretch_prefs(\"w\",3,1)") -ofc ("fStretch_prefs(\"w\",3,0)");
+            text -h 10 "\n";
+            button -label "Close" -w 100 -rs 1 -h 30 -command ("deleteUI -window " + $window);
+            text -h 20 "\n";
+            setParent ..;
+            showWindow $window;
+            window -e -wh 400 $height -s 0 $window;
+        }
+
+    }
+    if ($name == "displacementColorRamp"){
+        if (fStretch_prefs("r",2,0) == 0) {
+            int $height; if ($mayaYear < 2011) { $height = 185; } else { $height = 160; }
+
+            string $window = `window -title "fStretch - Create Displacement Network " -iconName "fStretch - Create Displacement Network" -rtf 1 -tlb 1 -s 1`;
+            columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+            text -h 20 "\n";
+            text "Warning ! The Tension and/or the Angle color ramp(s) nof the involved fStretch node will be set to grayscalen in order to drive the displacement maps accordingly.n Please do not alter the ramps' values.n";
+            checkBox -label "Do not show this warning again." -v 0 -onc ("fStretch_prefs(\"w\",2,1)") -ofc ("fStretch_prefs(\"w\",2,0)");
+            text -h 10 "\n";
+            button -label "Close" -w 100 -rs 1 -h 30 -command ("deleteUI -window " + $window);
+            text -h 20 "\n";
+            setParent ..;
+            showWindow $window;
+            window -e -wh 350 $height -s 0 $window;
+        }
+    }
+
+    if ($name == "acceleration"){
+
+        int $height; if ($mayaYear < 2011) { $height = 190; } else { $height = 165; }
+        if (($mayaYear < 2011) && (`about -li`)) { $height = 160; }
+
+        string $window = `window -title "fStretch - Acceleration feature" -iconName "fStretch - demo" -rtf 1 -tlb 1 -s 1`;
+        columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+        text -h 20 "\n";
+        text "fStretch's evaluation does not include the acceleration feature.nTo learn how fast can fStretch run with this feature,nplease visit our website.n";
+        button -label "Learn more about acceleration" -w 100 -rs 1 -command ("showHelp -a \"http://www.cgaddict.com\"");
+        text -h 10 "\n";
+        button -label "Close" -w 100 -h 30 -rs 1 -command ("deleteUI -window " + $window);
+        text -h 20 "\n";
+        setParent ..;
+        showWindow $window;
+        window -e -wh 400 $height -s 0 $window;
+    }
+
+    if ($name == "demoEnd"){
+
+        int $height; if ($mayaYear < 2011) { $height = 180; } else { $height = 140; }
+        if (($mayaYear < 2011) && (`about -li`)) { $height = 150; }
+
+        string $window = `window -title "fStretch - Evaluation" -iconName "fStretch - demo" -rtf 1 -tlb 1 -s 1`;
+        columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+        text -h 20 "\n";
+        text "Thank you for evaluating fStretch. nThe demonstration period is over.";
+        text -h 15 "\n";
+        button -label "Go to fStretch's website" -w 100 -rs 1 -command ("showHelp -a \"http://www.cgaddict.com\"");
+        text -h 10 "\n";
+        button -label "Close" -w 100 -h 30 -rs 1 -command ("deleteUI -window " + $window);
+        text -h 20 "\n";
+        setParent ..;
+        showWindow $window;
+        window -e -wh 250 $height -s 0 $window;
+    }
+
+    if ($name == "demo"){
+
+        int $height; if ($mayaYear < 2011) { $height = 145; } else { $height = 125; }
+        if (($mayaYear < 2011) && (`about -li`)) { $height = 160; }
+
+        string $window = `window -title "fStretch - Evaluation" -iconName "fStretch - demo" -rtf 1 -tlb 1 -s 1`;
+        columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+        text -h 20 "\n";
+        text "No valid license found for fStretch. nThe plug-in will load in evaluation mode.nn Please take note that the accelerationn features are disabled in the trial mode.n";
+        button -label "Close" -w 100 -h 30 -rs 1 -command ("deleteUI -window " + $window);
+        text -h 20 "\n";
+        setParent ..;
+        showWindow $window;
+        window -edit -widthHeight 300 $height -s 0 $window;
+    }
+
+    if ($name == "connectUVDirectionMesh"){
+        if (fStretch_prefs("r",1,0) == 0) {
+            int $height; if ($mayaYear < 2011) { $height = 185; } else { $height = 160; }
+            if (($mayaYear < 2011) && (`about -li`)) { $height = 160; }
+            
+            string $window = `window -title "fStretch - UV Direction meshes " -iconName "fStretch" -rtf 1 -tlb 1 -s 1`;
+            columnLayout -adjustableColumn 1 -cal "center" -co "both" 20;
+            text -h 20 "\n";
+            text "Please do not forget to update your UV Direction meshes if you change the nstandard meshes. For example, if you change the Stretch mesh a lot and do notnchange its U and V meshes accordingly, you might end up with undesired results. n";
+            checkBox -label "Do not show this warning again." -v 0 -onc ("fStretch_prefs(\"w\",1,1)") -ofc ("fStretch_prefs(\"w\",1,0)");
+            text -h 10 "\n";
+            button -label "Close" -w 100 -rs 1 -h 30 -command ("deleteUI -window " + $window);
+            text -h 20 "\n";
+            setParent ..;
+            showWindow $window;
+            window -e -wh 500 $height -s 0 $window;
+        }
+    }
+}

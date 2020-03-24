@@ -1,0 +1,34 @@
+global proc fStretch_paint(string $fStretch_paintAttribute)
+{
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "weights";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionSmooth";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleSmooth";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionDirection";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleDirection";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintStretchGrowShrink";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintSquashGrowShrink";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendInGrowShrink";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendOutGrowShrink";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintTensionRange";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintAngleRange";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintStretchRelax";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintSquashRelax";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendInRelax";
+    makePaintable -attrType "multiFloat" -sm "deformer" "fStretch" "paintBendOutRelax";
+
+    string $sel[] = `ls -sl`;
+    if (size($sel) != 1){ error("fStretch: Select only one mesh to paint."); }
+    string $shapes[] = `listRelatives -f $sel[0]`;
+    for ($each in $shapes){
+        $connections = `listHistory -pruneDagObjects true -interestLevel 1 ($each)`;
+        for ($eachCon in $connections){
+            if ( (`nodeType $eachCon`) == "fStretch") {
+                if (`getAttr ($eachCon + ".displayWarnings")` == 1) { if ( ($fStretch_paintAttribute == "paintTensionDirection") || ($fStretch_paintAttribute == "paintAngleDirection") ) { fStretch_window("UVDirection"); } }
+                ArtPaintAttrToolOptions;
+                artSetToolAndSelectAttr( "artAttrCtx", ("fStretch." + $eachCon + "." + $fStretch_paintAttribute) );
+            }
+        }
+    }
+    
+    print ("fStretch: painting the " + $fStretch_paintAttribute + " attribute.");
+}

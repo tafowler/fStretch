@@ -1,0 +1,42 @@
+global proc float fStretch_prefs(string $action, int $settingId, int $settingValue)
+{
+    /* File's path */
+    $fileName = ( `internalVar -userPrefDir` + "fStretchPrefs.cfg" );
+
+    string $contentList[]; string $fileContent;
+    int $fileIdR; int $fileIdW;
+
+    /* Check if file exist */
+    if (!`filetest -e $fileName`) {
+        $fileIdW = `fopen $fileName "w"`;
+        if ($fileIdW == 0) { warning("nfStretch: cannot open file " + $fileName + " to read or set fStretch's configurations."); return 0; }
+/* Write default settings */
+        fwrite $fileIdW "0;0;0;0;";
+        fclose $fileIdW;
+        $fileIdR = `fopen $fileName "r"`;
+        if ($fileIdR == 0) { warning("nfStretch: cannot open file " + $fileName + " to read or set fStretch's configurations."); return 0; }
+    }
+
+    /* Read file */
+    $fileIdR = `fopen $fileName "r"`;
+    $fileContent = `fread $fileIdR $fileContent`;
+    fclose $fileIdR;
+    tokenize $fileContent ";" $contentList;
+    /* read the desired setting */
+    if ($action == "r"){
+        return ($contentList[$settingId]);
+    }
+    /* write the desired setting */
+    if ($action == "w"){
+        $contentList[$settingId] = $settingValue;
+        /* write back result */
+        $fileIdW = `fopen $fileName "w"`;
+        if ($fileIdW == 0) { warning("nfStretch: cannot open file " + $fileName + " to read or set fStretch's configurations."); return 0; }
+        string $data = "";
+        for ($each in $contentList){ $data = ($data + $each + ";"); }
+        fwrite $fileIdW $data;
+        fclose $fileIdW;
+        return 1;
+    }
+    return 0;
+}

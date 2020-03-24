@@ -1,0 +1,208 @@
+global proc fStretch_bakeColorPerVertex(string $mesh,string $exportValue,string $imageFormat,int $mapSizeX, int $mapSizeY, float $startFrame, float $endFrame, string $name, string $path, int $forceRefresh)
+{
+    string $nameSub = $name; string $meshSub = $mesh;
+
+    while (`substitute ":" $nameSub "_"` != $nameSub){$nameSub = `substitute ":" $nameSub "_"`; }
+    while (`substitute ":" $meshSub "_"` != $meshSub){$meshSub = `substitute ":" $meshSub "_"`; }
+
+    select -r $mesh;
+    string $history[] = `listHistory -pruneDagObjects true -interestLevel 0 $mesh`;
+    $findIt = 0; string $fStretch;
+    for ($each in $history){
+        if (`nodeType $each` == "fStretch") { $findIt = 1; $fStretch = $each; }
+    }
+    int $oldAttr = `getAttr ($fStretch + ".drawColorPerVertex")`;
+    if ($findIt == 1) { setAttr ($fStretch + ".drawColorPerVertex") 1; }
+
+    PaintVertexColorToolOptions;
+
+    int $amount = 0;
+
+    progressWindow
+        -title "Baking..."
+        -progress $amount
+        -status "Working hard: 0%"
+        -isInterruptable true;
+
+    int $f;
+    for($f=$startFrame;$f<=$endFrame;$f++)
+    {
+        string $fString = $f;
+        int $paddingNo = (4-size($fString));
+        string $padding = ""; int $i=0;
+        for ($i=0;$i<$paddingNo;$i++){
+            $padding = ($padding + "0");
+        }
+
+        currentTime $f;
+
+        /* Check if the dialog has been cancelled */
+        if ( `progressWindow -query -isCancelled` ) break;
+
+        $amount = ((($f - $startFrame) / ($endFrame-$startFrame)) * 100.0);
+
+        progressWindow -edit
+            -progress $amount
+            -status ("Working hard: "+$amount+"%");
+
+        select -r $mesh;
+        if ($forceRefresh) { dgdirty -a; }
+        artSetToolAndSelectAttr( "artAttrCtx", "mesh." + $mesh +".vertexColorRGB" );
+        artExportAttrMapCB ("artAttrPaintVertexCtx -efm " + $exportValue + " -eft " + $imageFormat + " -fsx " + $mapSizeX + " -fsy " + $mapSizeY) ($path + $meshSub + "_" + $nameSub + "." + $padding + $f + "." + $imageFormat) "map";
+    }
+
+    progressWindow -endProgress;
+
+    setAttr ($fStretch + ".drawColorPerVertex") $oldAttr;
+}
+
+/* window command proc */
+
+global proc fStretch_bakeColorPerVertex_window(){
+    $exportValue = `optionMenu -q -value fStretch_exportValue`;
+    $imageFormat = `optionMenu -q -value fStretch_imageFormat`;
+    $mapSizeX = `intField -q -value fStretch_mapSizeX`;
+    $mapSizeY = `intField -q -value fStretch_mapSizeY`;
+    $startFrame = `intField -q -value fStretch_startFrame`;
+    $endFrame = `intField -q -value fStretch_endFrame`;
+    $name = `textField -q -text fStretch_name`;
+    $path = `textField -q -text fStretch_path`;
+    $forceRefresh = `checkBox -q -v fStretch_forceRefresh`;
+
+    /* savePreset */
+
+    global string $fStretch_bakeColorPerVertex_presets[];
+    $fStretch_bakeColorPerVertex_presets[0] = $exportValue;
+    $fStretch_bakeColorPerVertex_presets[1] = $imageFormat;
+    $fStretch_bakeColorPerVertex_presets[2] = $mapSizeX;
+    $fStretch_bakeColorPerVertex_presets[3] = $mapSizeY;
+    $fStretch_bakeColorPerVertex_presets[4] = $startFrame;
+    $fStretch_bakeColorPerVertex_presets[5] = $endFrame;
+    $fStretch_bakeColorPerVertex_presets[6] = $name;
+    $fStretch_bakeColorPerVertex_presets[7] = $path;
+    $fStretch_bakeColorPerVertex_presets[8] = $forceRefresh;
+
+    /* launch the baking procedure */
+
+    string $sel[] = `ls -sl`;
+    if (size($sel) == 0) { error("Select a mesh."); }
+
+    for ($each in $sel){
+        fStretch_bakeColorPerVertex($each,$exportValue,$imageFormat,$mapSizeX,$mapSizeY,$startFrame,$endFrame,$name,$path,$forceRefresh);
+    }
+}
+
+/* proc for the Window */
+
+global proc fStretch_colorPerVertexWindow(){
+    string $about = `about -v`; string $mayaVersion[];
+    tokenizeList($about, $mayaVersion);
+    int $mayaYear = $mayaVersion[0];
+    
+    int $height; if ($mayaYear < 2011) { $height = 225; } else { $height = 205; }
+
+    if (`window -exists fStretch_bakeColorPerVertex`)
+        deleteUI fStretch_bakeColorPerVertex;
+        window -title "fStretch - Bake Color Per Vertex" -widthHeight 200 $height -s 0 -mxb 0 fStretch_bakeColorPerVertex;
+
+        columnLayout;
+        text -label "";
+if (($mayaYear < 2011) && (`about -li`)) { rowLayout -numberOfColumns 2 -columnWidth2 205 175 -adjustableColumn 2 -columnAlign  1 "left" -columnAttach 1 "both"  0 -columnAttach 2 "both"  0; } else {
+        rowLayout -numberOfColumns 2
+            -columnWidth2 200 175
+            -adjustableColumn 2
+            -columnAlign  1 "left"
+            -columnAttach 1 "both"     0
+            -columnAttach 2 "both"  0; }
+if (($mayaYear < 2011) && (`about -li`)) { optionMenu -label " Export value:  " fStretch_exportValue; } else {
+        optionMenu -label "   Export value:  " fStretch_exportValue; }
+            menuItem -label "Luminance";
+            menuItem -label "Alpha";
+            menuItem -label "RGB";
+            menuItem -label "RGBA";
+
+        optionMenu -label "   Image format: " fStretch_imageFormat;
+            menuItem -label "Gif";
+            menuItem -label "SoftImage";
+            menuItem -label "RLA";
+            menuItem -label "TIFF";
+            menuItem -label "SGI";
+            menuItem -label "Alias";
+            menuItem -label "IFF";
+            menuItem -label "JPEG";
+            menuItem -label "EPS";
+
+        setParent..;
+if (($mayaYear < 2011) && (`about -li`)) { rowLayout -nc 4 -cw4 120 85 120 81 -ct4 "both" "both" "right" "both" -columnAlign  1 "left"; } else {
+        rowLayout -nc 4 -cw4 80 85 115 81 -ct4 "both" "both" "right" "both" -columnAlign  1 "left"; }
+            text "   Map Size X:    ";
+            intField -value 512 fStretch_mapSizeX;
+            text "      Map Size Y:";
+            intField -value 512 fStretch_mapSizeY;
+            setParent..;
+if (($mayaYear < 2011) && (`about -li`)) { rowLayout -nc 4 -cw4 120 85 120 81 -ct4 "both" "both" "right" "both" -columnAlign  1 "left"; } else {
+        rowLayout -nc 4 -cw4 80 85 115 81 -ct4 "both" "both" "right" "both" -columnAlign  1 "left"; }
+            text "   Start Frame:";
+            intField -value 1 fStretch_startFrame;
+            text " End Frame:";
+            intField -value 1 fStretch_endFrame;
+            setParent..;
+if (($mayaYear < 2011) && (`about -li`)) { rowLayout -nc 2 -cw2 80 325 -ct2 "both" "both" -columnAlign  1 "left"; } else {
+        rowLayout -nc 2 -cw2 80 285 -ct2 "both" "both" -columnAlign  1 "left"; }
+            text "   Name:";
+            textField -text "tension" fStretch_name;
+            setParent..;
+if (($mayaYear < 2011) && (`about -li`)) { rowLayout -nc 3 -cw3 80 275 50 -ct3 "both" "both" "both" -columnAlign  1 "left"; } else {
+        rowLayout -nc 3 -cw3 80 230 50 -ct3 "both" "both" "both" -columnAlign  1 "left"; }
+            text "   Path:";
+            textField -text (`workspace -q -dir`) fStretch_path;
+            button -c ("global string $fStretch_browse_dir; fileBrowser "fStretch_browse_dir" "Choose Directory" "directory" 4; textField -e -text ($fStretch_browse_dir) fStretch_path;") "Browse";
+            setParent..;
+
+        rowLayout -nc 2 -cw2 80 230 -ct2 "both" "both";
+            text " ";
+            checkBox -label "Force refresh" fStretch_forceRefresh;
+            setParent..;
+
+            text -l " " -h 10;
+if (($mayaYear < 2011) && (`about -li`)) { rowColumnLayout -numberOfColumns 3 -columnWidth 1 10 -columnWidth 2 395 -columnWidth 3 10; } else {
+        rowColumnLayout -numberOfColumns 3
+            -columnWidth 1 10
+            -columnWidth 2 355
+            -columnWidth 3 10; }
+            text -label "";
+if (($mayaYear < 2011) && (`about -li`)) { button -w 395 -h 30 -c "fStretch_bakeColorPerVertex_window()" -align "center" "Bake Color Per Vertex"; } else {
+            button -w 355 -h 30 -c "fStretch_bakeColorPerVertex_window()" -align "center" "Bake Color Per Vertex"; }
+            text -label " ";
+        setParent..;
+        text -h 10 "n";
+
+    showWindow fStretch_bakeColorPerVertex;
+
+    global string $fStretch_bakeColorPerVertex_presets[];
+
+    int $mapSizeX = $fStretch_bakeColorPerVertex_presets[2];
+    int $mapSizeY = $fStretch_bakeColorPerVertex_presets[3];
+    int $startFrame = $fStretch_bakeColorPerVertex_presets[4];
+    int $endFrame = $fStretch_bakeColorPerVertex_presets[5];
+    int $forceRefresh = $fStretch_bakeColorPerVertex_presets[8];
+
+    optionMenu -e -value "RGBA" fStretch_exportValue;
+    optionMenu -e -value "JPEG" fStretch_imageFormat;
+    intField -e -value `playbackOptions -q -min` fStretch_startFrame;
+    intField -e -value `playbackOptions -q -max` fStretch_endFrame;
+
+    if ($fStretch_bakeColorPerVertex_presets[0] != "") { optionMenu -e -value $fStretch_bakeColorPerVertex_presets[0] fStretch_exportValue; }
+    if ($fStretch_bakeColorPerVertex_presets[1] != "") { optionMenu -e -value $fStretch_bakeColorPerVertex_presets[1] fStretch_imageFormat; }
+    if ($fStretch_bakeColorPerVertex_presets[2] != "") { intField -e -value $mapSizeX fStretch_mapSizeX; }
+    if ($fStretch_bakeColorPerVertex_presets[3] != "") { intField -e -value $mapSizeY fStretch_mapSizeY; }
+    if ($fStretch_bakeColorPerVertex_presets[4] != "") { intField -e -value $startFrame fStretch_startFrame; }
+    if ($fStretch_bakeColorPerVertex_presets[5] != "") { intField -e -value $endFrame fStretch_endFrame; }
+    if ($fStretch_bakeColorPerVertex_presets[6] != "") { textField -e -text $fStretch_bakeColorPerVertex_presets[6] fStretch_name; }
+    if ($fStretch_bakeColorPerVertex_presets[7] != "") { textField -e -text $fStretch_bakeColorPerVertex_presets[7] fStretch_path; }
+    if ($fStretch_bakeColorPerVertex_presets[8] != "") { checkBox -e -v $forceRefresh fStretch_forceRefresh; }
+
+    if (($mayaYear < 2011) && (`about -li`)) { window -edit -widthHeight 430 $height fStretch_bakeColorPerVertex; } else {
+    window -edit -widthHeight 380 $height fStretch_bakeColorPerVertex; }
+    print ("fStretch: Bake color per vertex window.");
+}

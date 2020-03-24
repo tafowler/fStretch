@@ -19,16 +19,17 @@
 #ifndef fStretch_h
 #define fStretch_h
 
-#ifndef _DEBUG
-#ifdef _OPENMP
-    #include <omp.h> // This is for OpenMP multi-threading. OpenMP DOES NOT WORK IN DEBUG
-#endif
-#endif
+// #ifndef _DEBUG
+// #ifdef _OPENMP
+//     #include <omp.h> // This is for OpenMP multi-threading. OpenMP DOES NOT WORK IN DEBUG
+// #endif
+// #endif
 
 #include <iostream>
+#include <maya/MString.h>
 #include <maya/MPxDeformerNode.h>
 #include <maya/MItGeometry.h>
-#include <maya/MFnPlugin.h>
+// #include <maya/MFnPlugin.h>
 #include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 #include <maya/MFnMeshData.h>
@@ -39,8 +40,8 @@
 #include <maya/MFnEnumAttribute.h>
 #include <maya/MFnCompoundAttribute.h>
 #include <stddef.h>
-#include <Iphlpapi.h>
-#include <Assert.h>
+// #include <Iphlpapi.h>
+// #include <Assert.h>
 #include <maya/MItMeshEdge.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MRampAttribute.h>
@@ -74,7 +75,7 @@ MPoint closestPointOnPlane(MVector faceNormal, MVector facePoint, MVector point)
 float distance3D(MVector a, MVector b);
 MVector intersectTwoLines(MVector A1, MVector A2, MVector B1, MVector B2);
 MVector getNormal(MPoint A, MPoint B, MPoint C);
-int round(float value);
+//int round(float value);
 float vectorAngle(MVector A, MVector B, MVector normal);
 float convertPaintedU(float input);
 float convertPaintedV(float input);
@@ -82,7 +83,7 @@ float convertPaintedV(float input);
 
 /////////////////////////////////// Init / Uninit ///////////////////////////////////
 
-MStatus uninitializePlugin( MObject obj);
+// MStatus uninitializePlugin( MObject obj);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////// MACROS ///////////////////////////////////////////////////////////////////////////
@@ -91,7 +92,7 @@ MStatus uninitializePlugin( MObject obj);
 
 #define MCheckStatus(status,message) \
 	if( MStatus::kSuccess != status ) { \
-		MGlobal::displayError(message "\n"); \
+		MGlobal::displayError(message); \
 		return status; \
 	}
 

@@ -117,9 +117,9 @@ MVector getNormal(MPoint A, MPoint B, MPoint C)
 
 // ROUNDOFF A VALUE
 
-int round(float value) {
-	return int(value + 0.5);
-}
+// int round(float value) {
+// 	return int(value + 0.5);
+// }
 
 // proc to find the cos of the angle of two vectors
 // 1 = 0 degree
