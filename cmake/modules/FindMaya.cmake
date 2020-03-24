@@ -86,6 +86,7 @@ if(IS_MACOSX)
             "/Applications/Autodesk/maya2017"
             "/Applications/Autodesk/maya2016.5"
             "/Applications/Autodesk/maya2016"
+            "${CMAKE_SOURCE_DIR}/3rdParty/MayaDevkit/2019/osx/devkitBase"
         DOC
             "Maya installation root directory"
     )
@@ -113,6 +114,7 @@ elseif(IS_LINUX)
             "/usr/autodesk/maya2017-x64"
             "/usr/autodesk/maya2016.5-x64"
             "/usr/autodesk/maya2016-x64"
+            "${CMAKE_SOURCE_DIR}/3rdParty/MayaDevkit/2019/linux/devkitBase"
         DOC
             "Maya installation root directory"
     )
@@ -141,6 +143,7 @@ elseif(IS_WINDOWS)
             "C:/Program Files/Autodesk/Maya2017"
             "C:/Program Files/Autodesk/Maya2016.5"
             "C:/Program Files/Autodesk/Maya2016"
+            "${CMAKE_SOURCE_DIR}/3rdParty/MayaDevkit/2019/win/devkitBase"
         DOC
             "Maya installation root directory"
     )
